@@ -12,7 +12,7 @@ class MosaicConstructor {
 public:
     MosaicConstructor();
 
-    void insert( cv::Mat frame, cv::Point translation, cv::Mat transformation);
+    void insert( cv::Mat frame, cv::Point translation);
     cv::Mat extract();
 private:
     cv::Point total_translation;

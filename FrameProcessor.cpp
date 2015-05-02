@@ -19,6 +19,9 @@ cv::Mat FrameProcessor::extract_channel(int channel) {
     return channels.at(channel);
 }
 
+int FrameProcessor::channel_count() {
+    return channels.size();
+}
 
 FrameProcessor::FrameProcessor(FrameDescriptor frameDescriptor) : frameDescriptor(frameDescriptor) {
 }

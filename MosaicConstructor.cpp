@@ -8,7 +8,7 @@
 
 using namespace cv;
 
-void MosaicConstructor::insert(cv::Mat frame, cv::Point translation, cv::Mat transformation) {
+void MosaicConstructor::insert(cv::Mat frame, cv::Point translation) {
     total_translation += translation;
     background_position = Point(0,0);
     

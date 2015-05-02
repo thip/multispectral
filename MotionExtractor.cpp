@@ -59,9 +59,6 @@ cv::Point find_translation(cv::Mat a, cv::Mat b, cv::Point point, search_params 
 
 
 
-cv::Mat const &MotionExtractor::get_transformation() const {
-    return transformation;
-}
 
 cv::Point const & MotionExtractor::get_translation() {
     return translation;

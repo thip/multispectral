@@ -17,6 +17,7 @@ public:
 
     void insert(cv::Mat frame);
     cv::Mat extract_channel(int channel);
+    int channel_count();
 
 private:
     std::vector<cv::Mat> channels;

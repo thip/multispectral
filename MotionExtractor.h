@@ -16,12 +16,10 @@ public:
     cv::Point get_motion_between(cv::Mat frameA, cv::Mat frameB);
 
     cv::Point const & get_translation();
-    cv::Mat const &get_transformation() const;
 
 private:
     cv::Mat last_frame;
     cv::Point translation;
-    cv::Mat transformation;
 
 };
 
