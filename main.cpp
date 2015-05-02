@@ -16,16 +16,16 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    cv::Mat frame;
+    cv::Mat frame, input_frame;
 
 
     do {
-        source_video >> frame;
-    }  while ( frame.empty() );
+        source_video >> input_frame;
+    }  while ( input_frame.empty() );
 
-   // cv::cvtColor(first_frame, frame, CV_BGR2GRAY);
+    cv::cvtColor(input_frame, frame, CV_BGR2GRAY);
 
-    long n_frames = 3616;//(long) source_video.get(CV_CAP_PROP_FRAME_COUNT) -1;
+    long n_frames = source_video.get(CV_CAP_PROP_FRAME_COUNT);
 
     std::vector<cv::Rect> regions;
 
@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
 
     cv::Size size = frame.size();
 
-    FrameDescriptor frameDescriptor(regions, size);
+    FrameDescriptor frameDescriptor(regions, frame.size() );
 
     FrameProcessor frameProcessor( frameDescriptor );
 
@@ -51,12 +51,22 @@ int main(int argc, char** argv) {
     }
 
 
-    for (int i = 1; i < n_frames; i++) {
+    for (int i = 1; i < n_frames; ) {
 
-        //cv::cvtColor(source_video.grab(), frame, CV_BGR2GRAY);
 
         cv::waitKey(1);
-        for (int f = 0; f <1; f++) source_video >> frame;
+        for (int f = 0; f <5; f++,i++){
+            source_video >> input_frame;
+
+            if (input_frame.empty()) {
+                std::cout << "Reached end of footage earlier than expected!";
+                goto END_PROCESSING;
+            }
+        }
+
+
+
+        cv::cvtColor(input_frame, frame, CV_BGR2GRAY);
 
         frameProcessor.insert(frame);
 
@@ -74,18 +84,13 @@ int main(int argc, char** argv) {
             mosaicConstructors.at(channel)->insert(frameProcessor.extract_channel(channel), average_motion);
         }
 
-        //motion.insert(frameProcessor.extract_channel(0));
+
 
         std::cout << i << "/" << n_frames << std::endl;
-
-        //mosaic.insert(frameProcessor.extract_channel(0), motion.get_translation(), motion.get_transformation());
-
-
-
-
-
-
     }
+
+END_PROCESSING:
+
     cv::imshow("sup", mosaicConstructors.at(0)->extract());
     cv::waitKey(0);
 
