@@ -11,104 +11,104 @@
 #include "MotionExtractor.h"
 
 
-struct search_parameters {
-    cv::Size patch_size;
-    cv::Size search_window_size;
-    cv::Point expected_translation;
-};
 
-unsigned long sum_of_square_diffs( cv::Mat a, cv::Mat b ) {
+
+unsigned long sum_of_square_diffs(cv::Mat a, cv::Mat b) {
 
     unsigned long ssd = 0;
 
-    for ( int x = 0; x < a.cols; x++ ){
-        for ( int y = 0; y < a.rows; y++ ){
-            ssd += pow( a.at<uchar>(x,y) - b.at<uchar>(x,y) , 2 );
+    for (int x = 0; x < a.cols; x++) {
+        for (int y = 0; y < a.rows; y++) {
+            ssd += pow(a.at<uchar>(x, y) - b.at<uchar>(x, y), 2);
         }
     }
     return ssd;
 }
 
 
-cv::Point const & MotionExtractor::get_translation() {
+cv::Point const &MotionExtractor::get_translation() {
     return translation;
 }
 
-void MotionExtractor::insert(const cv::Mat &frame) {
+void MotionExtractor::insert(const cv::Mat &frame, cv::Point expected_translation) {
+    search_parameters.expected_translation = expected_translation;
     translation = get_motion_between(frame, last_frame);
-    //cv::imshow("a", last_frame); cv::imshow("b", frame); cv::waitKey(0);
     frame.copyTo(last_frame);
 }
 
 cv::Point MotionExtractor::get_motion_between(cv::Mat frameA, cv::Mat frameB) {
 
-    ////////////////
-    //more horror://
-    ////////////////
-    int number(50);
+
+
     std::vector<cv::Point> features;
 
 
-    int border = 50;
+    int border_left, border_right, border_top, border_bottom;
 
+    border_left = (search_parameters.search_window_size.width+1)/2 + (search_parameters.patch_size.width+1)/2 - search_parameters.expected_translation.x +10;
+    border_right = (search_parameters.search_window_size.width+1)/2 + (search_parameters.patch_size.width+1)/2 + search_parameters.expected_translation.x +10;
+    border_top = (search_parameters.search_window_size.height+1)/2 + (search_parameters.patch_size.height+1)/2 - search_parameters.expected_translation.y +10;
+    border_bottom = (search_parameters.search_window_size.height+1)/2 + (search_parameters.patch_size.height+1)/2 + search_parameters.expected_translation.y +10;
 
-    cv::goodFeaturesToTrack(frameA(cv::Rect(border, border, frameA.cols - 2*border, frameA.rows - 2*border)), features, number, 0.25, 10);
+    border_left = border_left > 0 ? border_left : 0;
+    border_right = border_right > 0 ? border_right : 0;
+    border_top = border_top > 0 ? border_top : 0;
+    border_bottom = border_bottom > 0 ? border_bottom : 0;
 
-   /*for ( int i = 0; i < number; i++ ){
-        features.push_back( cv::Point( rand() % ( frameA.cols - 2*border ) + border,
-                                            rand() % ( frameA.rows - 2*border ) + border ) );
+    cv::goodFeaturesToTrack(frameA(cv::Rect(border_left, border_top, frameA.cols -  (border_left+border_right), frameA.rows - (border_top+border_bottom))),
+                            features, search_parameters.max_points, 0.1, 10);
 
-    }*/
 
 
     cv::Point translation(0, 0);
 
-    cv::Point min(0,0), max(0,0);
 
-    for ( cv::Point point : features ) {
+    for (cv::Point point : features) {
 
-        point += cv::Point(border,border);
+        point += cv::Point(border_left, border_top);
 
         unsigned long least(LONG_MAX);
 
 
         cv::Point best_translation;
         unsigned long ssd;
-        search_parameters params = {cv::Size(10,10), cv::Size(10,10), cv::Point(0,0)};
+
 
         cv::Mat patch_a = frameA(
-                cv::Range(point.y - params.patch_size.height / 2, point.y + params.patch_size.height / 2),
-                cv::Range(point.x - params.patch_size.width / 2, point.x + params.patch_size.width / 2));
+                cv::Range(point.y - search_parameters.patch_size.height / 2, point.y + search_parameters.patch_size.height / 2),
+                cv::Range(point.x - search_parameters.patch_size.width / 2, point.x + search_parameters.patch_size.width / 2));
 
-        for (int x = -params.search_window_size.width / 2; x < params.search_window_size.width / 2; x++)
-            for (int y = -params.search_window_size.height / 2; y < params.search_window_size.height / 2; y++) {
+        for (int x = -search_parameters.search_window_size.width / 2; x < search_parameters.search_window_size.width / 2; x++)
+            for (int y = -search_parameters.search_window_size.height / 2; y < search_parameters.search_window_size.height / 2; y++) {
                 cv::Mat patch_b = frameB(
-                        cv::Range(point.y + params.expected_translation.y - params.patch_size.width / 2 + y,
-                                  point.y + params.expected_translation.y + params.patch_size.width / 2 + y),
-                        cv::Range(point.x + params.expected_translation.x - params.patch_size.height / 2 + x,
-                                  point.x + params.expected_translation.x + params.patch_size.height / 2 + x));
+                        cv::Range(point.y + search_parameters.expected_translation.y - search_parameters.patch_size.width / 2 + y,
+                                  point.y + search_parameters.expected_translation.y + search_parameters.patch_size.width / 2 + y),
+                        cv::Range(point.x + search_parameters.expected_translation.x - search_parameters.patch_size.height / 2 + x,
+                                  point.x + search_parameters.expected_translation.x + search_parameters.patch_size.height / 2 + x));
 
                 ssd = sum_of_square_diffs(patch_b, patch_a);
                 if (ssd < least) {
                     least = ssd;
 
-                    //is this point done the right way around?
-                    best_translation = cv::Point(params.expected_translation + cv::Point(x, y));
+
+                    best_translation = cv::Point(search_parameters.expected_translation + cv::Point(x, y));
                 }
-                //std::cout<< "L:" << least << std::endl;
+
 
             }
 
-            translation += best_translation;
-        }
+        translation += best_translation;
+    }
 
 
 
- //return cv::Point(10,0);
-     return translation * (1.0f/features.size());
+
+    return translation * (1.0f / features.size());
 
 }
 
-MotionExtractor::MotionExtractor(cv::Size frame_size) {
+MotionExtractor::MotionExtractor(cv::Size frame_size, int max_points, cv::Size search_patch_size, cv::Size search_window_size) {
     last_frame = cv::Mat(frame_size, CV_8UC3);
+
+    search_parameters = {max_points, search_patch_size, search_window_size, cv::Point(0, 0)};
 }
