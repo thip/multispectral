@@ -22,8 +22,6 @@ public:
 private:
     std::vector<cv::Mat> channels;
     FrameDescriptor frameDescriptor;
-
-    void remove_distortion(cv::Mat mat);
 };
 
 

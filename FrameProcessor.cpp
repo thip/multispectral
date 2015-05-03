@@ -8,9 +8,7 @@
 
 void FrameProcessor::insert(cv::Mat frame) {
 
-    remove_distortion(frame);
-
-    for ( cv::Rect region : frameDescriptor.get_regions() ){
+    for ( cv::Rect region : frameDescriptor.get_channel_regions() ){
         channels.push_back(frame(region));
     }
 }
@@ -26,7 +24,4 @@ int FrameProcessor::channel_count() {
 FrameProcessor::FrameProcessor(FrameDescriptor frameDescriptor) : frameDescriptor(frameDescriptor) {
 }
 
-void FrameProcessor::remove_distortion(cv::Mat mat) {
-    std::cout << "Distortion removal not implemented yet!" << std::endl;
-    return;
-}
+

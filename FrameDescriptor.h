@@ -10,17 +10,17 @@
 
 class FrameDescriptor {
 public:
-    FrameDescriptor(std::string string);
+    FrameDescriptor(std::string file_path);
 
-    const cv::Size &get_frame_size() const;
-    std::vector<cv::Rect> const & get_regions() const;
-    unsigned long getChannels();
+    std::vector<cv::Rect> const &get_channel_regions() const;
+    unsigned long get_channel_count();
+    std::vector<std::string> const &getChannel_names() const;
 
-    FrameDescriptor(std::vector<cv::Rect> const &regions, cv::Size &frame_size);
+    FrameDescriptor(std::vector<cv::Rect> regions);
 
 private:
-    const cv::Size frame_size;
-    const std::vector<cv::Rect> regions;
+    std::vector<std::string> channel_names;
+    std::vector<cv::Rect> channel_regions;
 
 };
 
