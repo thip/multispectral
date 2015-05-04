@@ -11,8 +11,6 @@
 #include "MotionExtractor.h"
 
 
-
-
 unsigned long sum_of_square_diffs(cv::Mat a, cv::Mat b) {
 
     unsigned long ssd = 0;
@@ -61,7 +59,7 @@ cv::Point MotionExtractor::get_motion_between(cv::Mat frameA, cv::Mat frameB) {
 
 
     cv::Point translation(0, 0);
-
+    std::vector<cv::Point*> translations;
 
     for (cv::Point point : features) {
 
@@ -70,7 +68,7 @@ cv::Point MotionExtractor::get_motion_between(cv::Mat frameA, cv::Mat frameB) {
         unsigned long least(LONG_MAX);
 
 
-        cv::Point best_translation;
+        cv::Point* best_translation;
         unsigned long ssd;
 
 
@@ -89,26 +87,45 @@ cv::Point MotionExtractor::get_motion_between(cv::Mat frameA, cv::Mat frameB) {
                 ssd = sum_of_square_diffs(patch_b, patch_a);
                 if (ssd < least) {
                     least = ssd;
-
-
-                    best_translation = cv::Point(search_parameters.expected_translation + cv::Point(x, y));
+                    best_translation = new cv::Point(search_parameters.expected_translation + cv::Point(x, y));
                 }
 
 
             }
 
-        translation += best_translation;
+        translations.push_back(best_translation);
+        translation += *best_translation;
     }
 
 
 
 
-    return translation * (1.0f / features.size());
+    cv::Point mean_translation = translation * (1.0f / features.size());
+
+    std::sort(translations.begin(), translations.end(), [mean_translation](cv::Point* a, cv::Point* b){
+        auto distance_from_mean = [mean_translation](cv::Point* point){
+            return (point->x - mean_translation.x)^2 * (point->y - mean_translation.y)^2;
+        };
+
+        return distance_from_mean(a) < distance_from_mean(b);
+    });
+
+    translation = cv::Point(0, 0);
+
+    int cutoff_index = translations.size()/2;
+
+    for (int i = 0; i < cutoff_index; i++ ){
+        translation += *translations.at(i);
+        delete translations.at(i);
+    }
+
+    return translation * (1.0f/cutoff_index);
+
+    //return mean_translation;
 
 }
 
-MotionExtractor::MotionExtractor(cv::Size frame_size, int max_points, cv::Size search_patch_size, cv::Size search_window_size) {
+MotionExtractor::MotionExtractor(cv::Size frame_size, SearchParameters search_parameters) : search_parameters(search_parameters) {
     last_frame = cv::Mat(frame_size, CV_8UC3);
 
-    search_parameters = {max_points, search_patch_size, search_window_size, cv::Point(0, 0)};
 }

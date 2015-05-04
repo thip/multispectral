@@ -14,7 +14,7 @@ public:
 
     std::vector<cv::Rect> const &get_channel_regions() const;
     unsigned long get_channel_count();
-    std::vector<std::string> const &getChannel_names() const;
+    std::vector<std::string> const &get_channel_names() const;
 
     FrameDescriptor(std::vector<cv::Rect> regions);
 

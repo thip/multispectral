@@ -16,7 +16,7 @@ unsigned long FrameDescriptor::get_channel_count() {
     return channel_regions.size();
 }
 
-std::vector<std::string> const &FrameDescriptor::getChannel_names() const {
+std::vector<std::string> const &FrameDescriptor::get_channel_names() const {
     return channel_names;
 }
 

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include "FrameProcessor.h"
+#include "SearchParameters.h"
 #include "MotionExtractor.h"
 #include "MosaicConstructor.h"
 
@@ -10,16 +11,24 @@ int main(int argc, char **argv) {
 
     srand(time(NULL));
 
-    int search_patch_size = 25;
-    int search_window_size = 75;
-    int max_search_points = 500;
-
+    int search_patch_size = 85;
+    int search_window_size = 50;
+    int max_search_points = 10;
 
     cv::VideoCapture source_video(argv[1]);
     if (!source_video.isOpened()) {
         cout << "failed to open source footage\n";
         return -1;
     }
+
+    FrameDescriptor frameDescriptor(argv[2]);
+    SearchParameters search_parameters(argv[3]);
+
+    FrameProcessor frameProcessor(frameDescriptor);
+
+
+
+
 
     cv::Mat frame, input_frame;
 
@@ -38,19 +47,18 @@ int main(int argc, char **argv) {
     long n_frames = source_video.get(CV_CAP_PROP_FRAME_COUNT);
 
 
-    FrameDescriptor frameDescriptor(argv[2]);
 
-    FrameProcessor frameProcessor(frameDescriptor);
+
+
 
     std::vector<MotionExtractor *> motionExtractors;
     std::vector<MosaicConstructor *> mosaicConstructors;
 
     for (int channel = 0; channel < frameDescriptor.get_channel_count(); channel++) {
         cv::Rect region = frameDescriptor.get_channel_regions().at(channel);
-        motionExtractors.push_back(
-                new MotionExtractor(region.size(), max_search_points, cv::Size(search_patch_size, search_patch_size),
-                                    cv::Size(search_window_size, search_window_size)));
+        motionExtractors.push_back(new MotionExtractor(region.size(), search_parameters));
         mosaicConstructors.push_back(new MosaicConstructor());
+
     }
 
 
@@ -100,7 +108,7 @@ int main(int argc, char **argv) {
     for (int channel = 0; channel < frameDescriptor.get_channel_count(); channel++) {
         std::ostringstream output_filename;
 
-        output_filename << frameDescriptor.getChannel_names().at(channel) << ".tiff";
+        output_filename << frameDescriptor.get_channel_names().at(channel) << ".tiff";
 
         cv::Mat raw_mosaic = mosaicConstructors.at(channel)->extract();
 
