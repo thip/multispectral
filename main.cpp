@@ -12,6 +12,7 @@ int main(int argc, char **argv) {
         std::cout << "Usage:   " << argv[0]
             << "   input_file  frame_description_file  search_parameters_file  [ number_of_frames_to_skip ]"
             << std::endl;
+	return 1;
     }
 
     int frame_skip =1;
