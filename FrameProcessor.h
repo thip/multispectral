@@ -9,6 +9,7 @@
 #include "FrameDescriptor.h"
 
 
+//FrameProcessor: Takes frames and splits them into the regions made by the filters
 class FrameProcessor {
 
 public:
@@ -16,8 +17,7 @@ public:
     FrameProcessor(FrameDescriptor frameDescriptor);
 
     void insert(cv::Mat frame);
-    cv::Mat extract_channel(int channel);
-    int channel_count();
+    cv::Mat extract_channel(unsigned long channel);
 
 private:
     std::vector<cv::Mat> channels;

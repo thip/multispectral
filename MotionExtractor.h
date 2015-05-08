@@ -10,14 +10,13 @@
 #include "SearchParameters.h"
 
 
-
+//MotionExtractor: estimates translation between frames
 class MotionExtractor {
 public:
     MotionExtractor(cv::Size frame_size, SearchParameters search_parameters);
 
     void insert(const cv::Mat &frame, cv::Point expected_translation);
     cv::Point get_motion_between(cv::Mat frameA, cv::Mat frameB);
-
     cv::Point const & get_translation();
 
 private:

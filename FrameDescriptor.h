@@ -8,20 +8,19 @@
 
 #include <opencv2/core/core.hpp>
 
+//FrameDescriptor: describes the regions that the filters create in frames
 class FrameDescriptor {
 public:
     FrameDescriptor(std::string file_path);
+    FrameDescriptor(std::vector<cv::Rect> regions);
 
     std::vector<cv::Rect> const &get_channel_regions() const;
-    unsigned long get_channel_count();
     std::vector<std::string> const &get_channel_names() const;
-
-    FrameDescriptor(std::vector<cv::Rect> regions);
+    unsigned long get_channel_count();
 
 private:
     std::vector<std::string> channel_names;
     std::vector<cv::Rect> channel_regions;
-
 };
 
 

@@ -8,6 +8,7 @@
 
 #include <opencv2/core/core.hpp>
 
+//SearchParamerters: keeps track of the search parameters...
 class SearchParameters {
 
 public:

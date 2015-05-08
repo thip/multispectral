@@ -8,12 +8,14 @@
 
 #include <opencv2/core/core.hpp>
 
+//MosaicConstructor: turns regions from sequential frames into a mosaic
 class MosaicConstructor {
 public:
     MosaicConstructor();
 
     void insert( cv::Mat frame, cv::Point translation);
     cv::Mat extract();
+
 private:
     cv::Point total_translation;
     cv::Point top_left, bottom_right;
